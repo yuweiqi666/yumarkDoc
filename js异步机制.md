@@ -105,7 +105,7 @@ $.get("/test")  // $是函数对象
 
 #### promise的基本使用
 
-> 1. Promise构造函数传的回调函数（excutor执行器函数）是同步回调函数（里面具体的任务可以是同步也可以是异步）
+> 1. Promise构造函数传的回调函数（executor执行器函数）是同步回调函数（里面具体的任务可以是同步也可以是异步）
 > 2. promise.then(xxxxx)   / promise.catch(xxxxxx)    .then()是同步（指定回调函数）    传的回调函数是异步回调函数
 
 ````javascript
