@@ -212,7 +212,7 @@ p.then(value => {            // 接收成功的数据
 
 #### Promise.resolve()
 
-* 快速创建一个成功的promise对象
+* 快速创建一个成功的promise对象  **可以传一个promise对象作用一个参数**
 
 ````javascript
 const p1 = Promise.resolve(3)  // 快速创建一个成功的promise对象
