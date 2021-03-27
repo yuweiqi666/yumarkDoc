@@ -223,6 +223,22 @@ p1.then(res => {
 
 ````
 
+````javascript
+const p1 = Promise.resolve(Promise.resolve(3))//参数为一个promise对象 返回的是成功的promise对象
+
+p1.then(res => {
+	console.log(res)     //  3
+})
+````
+
+````javascript
+const p1 = Promise.resolve(Promise.reject(4)) //参数为一个promise对象 返回的是失败的promise对象
+
+p1.catch(err => {
+    conosle.log(err)    // 4
+})
+````
+
 
 
 #### Promise.reject()
@@ -354,7 +370,6 @@ pAll.then(res => {
     ````
 
     ````javascript
-    
     const p = new Promise((resolve, reject) => {
       throw new Error()
     })
@@ -363,7 +378,7 @@ pAll.then(res => {
       console.log(err)
     })
     ````
-  
+
     
 
 
@@ -390,7 +405,6 @@ pAll.then(res => {
   * 先指定回调函数  在改变peomise状态
 
     ````javascript
-    
     const p = new Promise((resolve, reject) => {
       setTimeout(() => {
         resolve(12) // 定时器三秒后执行  三秒后完成异步任务 触发resolve() 改变promise状态
@@ -575,6 +589,210 @@ pAll.then(res => {
   
   
   // 最终的输出为  1  2
+  ````
+
+  
+
+## async/await
+
+### async函数
+
+> 1. async函数的返回值是一个promise实例对象
+> 2. 返回promise的结果由函数执行的结果决定
+>
+> 
+
+````javascript
+async function fn() {
+  return 1
+}
+
+const f = fn()
+
+console.log(f);   // 返回成功值为1 的promise对象
+````
+
+````javascript
+async function fn() {
+  throw 2
+}
+
+const f = fn()
+
+console.log(f);   // 返回失败值为2 的promise对象
+````
+
+````javascript
+async function fn() {
+  return Promise.resolve(3)
+}
+
+const f = fn()
+
+console.log(f);   // 返回成功值为3 的promise对象
+````
+
+````javascript
+async function fn() {
+  return Promise.reject(4)
+}
+
+const f = fn()
+
+console.log(f);   // 返回失败值为4 的promise对象
+````
+
+
+
+### await表达式
+
+> 1. await右边表达式返回的是promise对象  则 await表达式返回的是promise对象成功的值
+> 2. await右边表达式返回的promise的失败的值只能用try {}catch(){} 来捕获
+> 3. await右边表达式返回的是不是promise对象  则 await表达式返回的就是这个表达式的值
+
+````javascript
+async function fn() {
+  const value = await 2   // await右边的表达式返回的不是promise对象   await返回的就是2
+  console.log(value);    // 输出为2
+}
+
+fn()
+````
+
+
+
+````javascript
+async function fn() {
+  const value = await Promise.resolve(3) 
+  //await右边的表达式返回promise对象 await返回该promise对象成功的值
+  console.log(value);    // 输出为2
+}
+
+fn()
+````
+
+
+
+````javascript
+async function fn() {
+  try{
+    const value = await Promise.reject(3)    // 通过try catch捕获promise失败的值
+  } catch(err) {
+    console.log(err);
+  }
+}
+fn()
+````
+
+
+
+
+
+
+
+## js异步宏队列与微队列
+
+### 宏队列
+
+* DOM事件回调
+* ajax
+* 定时器
+
+### 微队列
+
+* promise回调
+
+
+
+### 执行顺序
+
+> 同步任务 -> 微队列 -> 宏队列
+
+* **每次准备执行宏队列任务之前，都要将所有的微队列任务执行完**
+
+  ````javascript
+  setTimeout(() => {    // 定时器放在宏队列中
+    console.log(123);
+  }, 0);
+  
+  Promise.resolve(456).then(res => {   // promise回调放在微队列中
+    console.log(res);
+  })
+  
+  // 输出 456  123      应为先执行微队列在执行宏队列
+  ````
+
+  ````javascript
+  setTimeout(() => {          // 宏队列
+    console.log(1);
+  }, 0);
+  
+  setTimeout(() => {              // 宏队列
+    console.log(2);
+  }, 0);
+  
+  Promise.resolve(3).then(res => {     // 微队列
+    console.log(res);
+  })
+   
+  Promise.resolve(4).then(res => {      // 微队列
+    console.log(res);
+  })                                // 输出 3 4 1 2
+  ````
+
+  
+
+  ````javascript
+  setTimeout(() => {          // 宏队列   执行这个宏任务时又向微队列中插入微任务
+    console.log(1);
+    Promise.resolve(5).then(res => {     // 微队列
+      console.log(res);
+    })
+  }, 0);
+  
+  setTimeout(() => {              // 宏队列      这个宏任务执行前有一个微任务
+    console.log(2);
+  }, 0);
+  
+  Promise.resolve(3).then(res => {     // 微队列
+    console.log(res);
+  })
+   
+  Promise.resolve(4).then(res => {      // 微队列
+    console.log(res);
+  })                                // 输出 3 4 1 5 2
+  ````
+
+  
+
+  ````javascript
+  setTimeout(() => {
+    console.log(0);
+  }, 0);
+  
+  new Promise((resolve, reject) => {
+    console.log(1);
+    resolve()
+  }).then(() => {
+    console.log(2);
+    new Promise((resolve, reject) => {
+      console.log(3);
+      resolve()
+    }).then(() =>{
+      console.log(4);
+    }).then(() => {
+      console.log(5);
+    })
+  }).then(() =>{
+    console.log(6)
+  })
+  
+  new Promise((resolve, reject) => {
+    console.log(7);
+    resolve()
+  }).then(() => {
+    console.log(8);
+  })            
   ````
 
   
