@@ -599,6 +599,7 @@ pAll.then(res => {
 
 > 1. async函数的返回值是一个promise实例对象
 > 2. 返回promise的结果由函数执行的结果决定
+> 3. async函数时异步执行的
 >
 > 
 
@@ -649,6 +650,7 @@ console.log(f);   // 返回失败值为4 的promise对象
 > 1. await右边表达式返回的是promise对象  则 await表达式返回的是promise对象成功的值
 > 2. await右边表达式返回的promise的失败的值只能用try {}catch(){} 来捕获
 > 3. await右边表达式返回的是不是promise对象  则 await表达式返回的就是这个表达式的值
+> 4. **使用await必须搭配async函数   await理解为等待表达式中的promise返回成功的值并取出该值后代码才会继续往下执行（实现链式调用的终极解决方案）**
 
 ````javascript
 async function fn() {
