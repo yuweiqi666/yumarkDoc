@@ -146,12 +146,11 @@
 
 ## 解构赋值
 
-> 按照一定的模式从数组和对象中提取值，对变量进行赋值
+### 数组解构赋值
 
-* 数组中的解构赋值
+> 1. 变量取值由位置决定，按照对应的位置对变量赋值
 
-  > 1. 按照对应的位置对变量赋值
-  > 2. 可以单独结构数组中的某一个元素
+* 两边结构相同就可以进行解构赋值
 
   ````javascript
   const arr = [1, 2, 3, 4]
@@ -162,38 +161,128 @@
   console.log(b);   // 2
   console.log(c);   // 3
   console.log(d);   // 4
-  
   ````
-
-  
-
-* 对象的解构赋值（用的比较多）
-
-  > 1. 变量名与属性名必须一致（可以给变量名取别名   如 a: b   b就是变量a的别名）
-  > 2. 可以单独结构某一个属性 
 
   ````javascript
   
+  let [, , a] = [1, 2, 3]
   
-  const obj = {
-    uname: "yuweiqi",
-    age: 18,
-    sing: function() {
-      console.log("我会唱歌");
-    }
-  }
+  console.log(a);    // 3
+  ````
+
+  ````javascript
+  let [a, arr] = [1, [2, 3]]
   
+  console.log(arr);     // [2, 3]
+  ````
+
+  ````javascript
+  let [a, [,b]] = [1, [2, 3]]
   
-  let {uname, age, sing} = obj //也可以单独结构赋值某个属性（不一定要全部属性）
-  
-  
-  console.log(username);    // yuweiqi
-  
-  console.log(age);         // 18
-  
-  console.log(sing);         // function() {console.log("我会唱歌")}
-  
+  console.log(b);   // 3
   ````
 
   
+
+* 解构不成功的变为undefined
+
+  ````javascript
+  let [a, b, c] = [1, 2]
+  console.log(a);  // 1
+  console.log(b);  // 2
+  console.log(c);  // undefined
+  ````
+
+* 可以部分解构
+
+  ````javascript
+  let [a, b] = [1, 2, 3]
+  
+  
+  console.log(a);   // 1 
+  console.log(b);   // 2
+  ````
+
+* 可以设置默认值  且只有赋值为undefined才会有默认值
+
+  ````javascript
+  let [a = 1, b = 2] = [5, undefined]
+  
+  console.log(a);   // 5    只有赋值为undefined才会触发默认值
+  console.log(b);   // 2
+  ````
+
+  
+
+### 对象解构赋值（用的比较多）
+
+> 1. 变量必须与属性同名（区别于数组按对应位置给变量赋值）
+
+````javascript
+
+const obj = {
+  uname: "yuweiqi",
+  age: 18,
+  sing: function() {
+    console.log("我会唱歌");
+  }
+}
+
+
+let {uname, age, sing} = obj //也可以单独结构赋值某个属性（不一定要全部属性）
+
+
+console.log(username);    // yuweiqi
+
+console.log(age);         // 18
+
+console.log(sing);         // function() {console.log("我会唱歌")}
+
+````
+
+* 区分模式与变量
+
+````javascript
+let {p: {a}} = {p: {a: 2}}
+
+console.log(a); // 2
+
+console.log(p); // app.js:146 Uncaught ReferenceError: p is not defined
+
+
+// 此时的p不是作为变量  p是模式
+````
+
+````javascript
+let {p, p: {a}} = {p: {a: 2}}
+
+console.log(a);  // 2
+
+console.log(p); // {a: 2}
+
+// 此时的p和a都是变量
+````
+
+
+
+
+
+* 对象解构赋值变量可以取别名
+
+````javascript
+let {a: m} = {a: 1}
+
+console.log(m);   // 1   m为变量a的别名    其实和上面的模式与变量区别可以一起理解
+````
+
+
+
+* 对象解构指定默认值
+
+````javascript
+let {a= 1} = {a: undefined}
+
+
+console.log(a)   // 1     赋值为undefined取默认值1
+````
 
