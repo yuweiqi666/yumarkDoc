@@ -286,3 +286,204 @@ let {a= 1} = {a: undefined}
 console.log(a)   // 1     赋值为undefined取默认值1
 ````
 
+
+
+## 模板字符串
+
+> 用``表示  
+
+* 字符串拼接变量
+
+````javascript
+let a = 'zhangsan'
+
+
+let b = `我是${a}`
+
+
+console.log(b);
+````
+
+* 内容中可以直接使用换行符
+
+```javascript
+let a = `<ul>
+<li>123</li>
+</ul>`
+
+console.log(a);    
+```
+
+
+
+## 对象扩展
+
+* 对象属性方法的简写
+
+  ````javascript
+  let uname = "123"
+  
+  let say = function() {
+    console.log(123);
+  }
+  
+  const obj = {  
+    uname,      // 相当于uname:uanme
+    say         // 相当于say:say
+  }
+  ````
+
+  ````javascript
+  const obj = {
+    uname,
+    say() {           //  对象中方法的简写
+      console.log('hello');
+    }
+  }
+  
+  
+  
+  // 相当于   say: function() {xxxxx}
+  ````
+
+  
+
+* 对象中的属性名可以用表达式(用[])
+
+  ````javascript
+  
+  const obj = {
+    a: 1,
+    ["m" + "n"]: 2
+  }
+  
+  
+  console.log(obj.mn);   // 2
+  
+  console.log(obj['mn']);  // 2
+  ````
+
+  
+
+
+
+## 函数扩展
+
+* 箭头函数
+
+  * 详情见箭头函数章节
+
+    
+
+* es6允许给函数参数默认值
+
+  ````javascript
+  const add = (a, b, c = 5) => a + b + c
+  
+  
+  let result = add(1, 2)
+  
+  console.log(result);    // 8    c没有赋值就传默认值
+  ````
+
+* 参数默认值和解构赋值结合使用
+
+  ````javascript
+  const obj = {
+    uname: "zhangsan",
+    age: undefined,
+    hobbies: ['ball', 'sleep']
+  }
+  
+  
+  function f({uname, age = 20, hobbies}) {
+    console.log(uname);      // zhangsan
+    console.log(age);        // 默认值20  应为obj中的age属性为undefined
+    console.log(hobbies);    // ['ball', 'sleep']
+  }
+  
+  
+  f(obj)
+  ````
+
+  
+
+## 剩余参数（rest参数）
+
+> 函数传参有多个参数时，剩余参数必须写在最后一个
+
+* 将多余的参数转变为数组（es5 的arguments是转化的伪数组）
+
+  ````javascript
+  function f(a, b, ...args) {
+    console.log(args);
+  }
+  
+  
+  f(1, 2, 3, 4, 5)     // [3, 4, 5]
+  ````
+
+  
+
+
+
+
+
+## 扩展运算符
+
+> 区别：扩展运算符用在实参        剩余参数用于形参   
+
+* 将数组转化为逗号分隔的参数序列
+
+  ```javascript
+  function f() {
+    console.log(arguments);
+  }
+  
+  
+  const n = [1, 2, 3]
+  
+  f(...n)   // 相当于  f(1, 2, 3)   输出为伪数组  [1, 2, 3]
+  ```
+
+  
+
+* 对数组进行浅拷贝
+
+  ````javascript
+  const arr1 = [1, 2, 3]
+  
+  
+  
+  const arr2 = [...arr1]
+  
+  
+  console.log(arr2);    // [1, 2, 3]
+  ````
+
+
+
+* 合并数组  (es5  用的concat方法)
+
+  ````javascript
+  const arr1 = [1, 2, 3]
+  
+  const arr2 = [4, 5, 6]
+  
+  
+  const arr3 = [...arr1, ...arr2]
+  
+   
+  console.log(arr3); // [1, 2, 3, 4, 5, 6]
+  ````
+
+* 伪数组转化为真数组
+
+  ````javascript
+  const divs = document.querySelectorAll('div') // divs是一个伪数组
+  
+  console.log([...divs]);   // [...divs]是真数组
+  ````
+
+  
+

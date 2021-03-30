@@ -106,7 +106,7 @@ Object.defineProperty(obj, prop, descriptor)
 
   ````javascript
   var car = {}
-  var count = 1000   // 单独定义一个变量是防止溢出
+  var count = 1000   // 单独定义一个变量是防止溢出  无法使用value和writable
   Object.defineProperty(car, "price", {
     get() {
       console.log("属性被读取了");
