@@ -487,3 +487,315 @@ console.log(a);
 
   
 
+## Symbol
+
+> es6新增的原始数据类型  类似于字符串  唯一的
+
+* 创建一个Symbol
+
+  ````javascript
+  const s1 = Symbol("yuweiqi") // 传的参数只是一个表示符  理解为注释
+  
+  const s2 = Symbol("yuweiqi")
+  
+  console.log(s1 === s2);   // false
+  ````
+
+* Symbol.for(xxx)
+
+  > 先检查给定描述符的Symbol是否存在 存在就返回这个Symbol 不存在就创建一个这个Symbol
+
+  ````javascript
+  
+  const s1 = Symbol.for("yyy")
+  
+  const s2 = Symbol.for("yyy")
+  
+  
+  console.log(s1 === s2);        // true
+  ````
+
+  
+
+* 给对象添加唯一的属性
+
+  > 用于确保对象中的属性是唯一的  不会覆盖对象中的原有属性
+
+  ````javascript
+  
+  const person = {}
+  
+  person[Symbol("uname")] = "ywq"
+  
+  person[Symbol("age")] = 18
+  
+  
+  console.log(person);
+  ````
+
+  ````javascript
+  const obj = {
+    [Symbol("username")]: "yuweiqi",  //symbol作为属性名 用【】因为是表达式
+    [Symbol("age")]: 20
+  }
+  ````
+
+* 获取对象中的所有symbol属性名
+
+  > *Object.getOwnPropertySymbols(person)*
+
+  ````javascript
+  const obj = {
+    [Symbol("username")]: "yuweiqi",  //symbol作为属性名 用【】因为是表达式
+    [Symbol("age")]: 20
+  }
+  
+  console.log(Object.getOwnPropertySymbols(obj)) 
+  //[Symbol(uname), Symbol(age)]
+  ````
+
+  
+
+## 迭代器
+
+> 1. 迭代器（iterator）是一种接口（对象中的一个属性）任何数据接口只要部署了iterator接口，就可以完成遍历操作
+> 2. iterator主要提供for...of来遍历
+> 3. iterator是迭代数据中的Symbol.iterator属性  是一个函数
+
+### 迭代器概念
+
+* 原生具备iterator接口的数据
+
+  * Array
+  * Arguments（伪数组）
+  * Set
+  * Map
+  * String
+  * TypedArray
+  * NodeList（伪数组）
+
+
+
+
+### iterator工作原理
+
+1. 创建一个指针对象，指向当前数据结构的起始位置
+
+2. 第一次调用对象的next方法，指针自动指向数据结构的第一个成员
+
+3. 接下来不断的调用next方法 指针一直往后移动，直至指向最后一个成员
+
+
+
+````javascript
+const arr = ["唐僧", "孙悟空", "猪八戒"]
+
+
+console.log(arr);
+
+// 对象中的Symbol.iterator属性
+const it = arr[Symbol.iterator]()
+
+// 调用对象的next方法  返回包含value和done属性的对象
+console.log(it.next());  // {value: "唐僧", done: false}
+console.log(it.next());  // {value: "孙悟空", done: false}
+console.log(it.next());  // {value: "猪八戒", done: false}
+console.log(it.next());  // {value: undefined, done: true}
+
+````
+
+
+
+### 自定义迭代器
+
+````javascript
+const obj = {
+  uname: "zhangsan",
+  list: ["zs", "ls", "ww"],
+  [Symbol.iterator]() {
+    let index = 0
+    let _this = this
+    return {
+      next() {
+        if(index < _this.list.length) {
+          const result = { value: _this.list[index], done: false }
+          index++
+          return result
+        } else {
+          return { value: undefined, done: true }
+        }
+        
+      }
+    }
+  }
+}
+
+
+for(let i of obj) {
+  console.log(i);
+}
+
+````
+
+
+
+
+
+## 集合 set
+
+* 创建集合
+
+  ````javascript
+  let s1 = new Set()    // 创建一个空的集合
+  
+  let s2 = new Set([1, 2, 3])  
+  
+  
+  console.log(s2);
+  ````
+
+### 集合添加元素
+
+> add()
+
+````javascript
+let s1 = new Set()    // 创建空集合
+
+let s2 = new Set([1, 2, 3])
+
+
+s2.add(5)
+
+
+console.log(s2);  // Set(4) {1, 2, 3, 5}
+````
+
+
+
+​		
+
+### 集合删除元素
+
+````javascript
+let s1 = new Set()
+
+let s2 = new Set([1, 2, 3])
+
+s2.delete(1)
+
+
+console.log(s2);   // Set(2) {2, 3}
+````
+
+### 集合检测元素
+
+````javascript
+
+let s1 = new Set()
+
+let s2 = new Set([1, 2, 3])
+
+
+console.log(s2.has(2));  // 检测2是否s2中  返回布尔值   true
+````
+
+
+
+### 清空集合
+
+````javascript
+let s1 = new Set()
+
+let s2 = new Set([1, 2, 3])
+
+
+s2.clear()
+
+
+console.log(s2);   // Set(0) {}
+````
+
+
+
+## map
+
+> 类似于对象  但是键的对象不限于字符串
+
+* 创建一个空的map
+
+  ````javascript
+  const p1 = new Map()
+  
+  
+  console.log(p1);
+  ````
+
+### map添加元素
+
+> set(属性名， 属性值)
+
+````javascript
+const p1 = new Map()
+
+p1.set("uname", "zs")
+
+console.log(p1);
+````
+
+````javascript
+const p1 = new Map()
+
+
+const n = function() {
+  let num = 1
+}
+
+
+p1.set(n, "123")
+
+
+console.log(p1);
+````
+
+
+
+### map删除元素
+
+> delete(元素名)
+
+````javascript
+const p1 = new Map()
+
+
+const n = function() {
+  let num = 1
+}
+
+
+p1.set(n, "123")
+
+p1.delete(n)
+
+console.log(p1);
+````
+
+### map获取元素
+
+> get(元素名)
+
+````javascript
+const p1 = new Map()
+
+
+const n = function() {
+  let num = 1
+}
+
+
+p1.set(n, "123")
+
+console.log(p1.get(n));
+````
+
+
+
