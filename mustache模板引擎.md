@@ -280,17 +280,119 @@ const domStr = Mustache.render(templateStr, data)
 container.innerHTML = domStr 
 ````
 
+### 模板写在script标签中
+
+> 更好的书写标签， 标签书写有提示
+
+````javascript
+<script type="text/template" id="template">
+  <div>我买了一个{{thing}}， 好{{state}}</div>
+</script>
+      
+
+const template = document.querySelector("#template")
+
+const templateStr = template.innerHTML
+
+const container = document.querySelector(".container")
+
+
+const data = {
+  thing: "华为手机",
+  state: "开心"
+}
+
+const domStr = Mustache.render(templateStr, data)
+
+container.innerHTML = domStr
+````
+
 
 
 
 
 ## mustache底层原理
 
+### 正则表达式简单数据填充
+
+> 利用正则表达式+replace方法
+
+````javascript
+const templateStr = '今天我买了一个{{thing}}， 好{{state}}'
+
+const data = {
+  thing: "华为手机",
+  state: "开心"
+}
+
+
+const myRender = function(templateStr, data) {
+  const domStr = templateStr.replace(/\{\{(\w+)\}\}/g, function(findStr, $1) {
+    return data[$1]
+  })
+  return domStr
+}
+
+const container = document.querySelector(".container")
+
+const domStr = myRender(templateStr, data)
+
+container.innerHTML = domStr
+````
 
 
 
 
 
+### tokens
+
+* tokens 是一个js的嵌套数组，就是模板字符串的js表示
+
+* tokens是**抽象语法树**、**虚拟节点**等等的开山鼻祖
+
+  ![微信截图_20210408191700](E:\桌面\笔记\imgs\微信截图_20210408191700.png)
+
+  ````javascript
+  // 模板字符串
+  <h1>我买了一个{{thing}}, 好{{state}}啊</h1>
+  
+  // tokens
+  [
+    ["text", "<h1>我买了一个"],   // token
+    ["name", "thing"],          // token
+    ["text", ",好"],             // token 
+    ["name", "state"],           // token 
+    ["text", "啊</h1>"]            // token 
+  ]
+  ````
+
+  ````javascript
+  // 模板字符串
+  {{#list}}
+      <li>{{.}}</li>
+  {{/list}}
+    
+  // tokens 
+   [
+    ["#", "list", [
+      ["text", "<li>"],
+      ["name", "."],
+      ["text", "<li>"]
+    ]]
+   ]
+   
+  ````
+
+  
+
+* **mustache底层重点做的两件事**
+
+  * 将模板字符串转化为tokens形式
+  * 将tokens结合数据解析为dom字符串
+
+
+
+## 手写mustache库
 
 
 
