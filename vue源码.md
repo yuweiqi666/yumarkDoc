@@ -348,3 +348,66 @@ export default function(sel, data, c) {
       >
       >    ![四种都没有命中](.\imgs\四种都没有命中.png)
 
+
+
+
+
+## 数据响应式原理
+
+### object.defineProperty()
+
+> vue2.x 实现数据响应式的核心 详解见笔记
+
+````javascript
+var obj = {}
+var val = 123 // 设置变量
+Object.defineProperty(obj, "a", {
+    // 可以被枚举
+    enumerable: true,
+    // 可以被配置  比如delete
+    configurable: true,
+    get() {
+      console.log("属性被读取了");
+      return val
+    },
+    set(newVal) {
+      console.log("属性被修改了");
+      if(newVal === val) {
+        return 
+      } 
+      val = newVal
+    } 
+  })
+````
+
+
+
+#### defineReactive()
+
+> defineProperty设置get和set拦截时 必须要另外定义一个变量 用于周转，所以 我们可以封装defineReactive提供闭包环境
+
+````javascript
+function defineReactive(obj, key, val) {
+  if(arguments.length == 2) {
+    val = obj[key]
+  } 
+  Object.defineProperty(obj, key, {
+    // 可以被枚举
+    enumerable: true,
+    // 可以被配置  比如delete
+    configurable: true,
+    get() {
+      console.log("属性被读取了");
+      return val
+    },
+    set(newVal) {
+      console.log("属性被修改了");
+      if(newVal === val) {
+        return 
+      } 
+      val = newVal
+    } 
+  })
+}
+````
+
