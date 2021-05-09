@@ -354,6 +354,10 @@ export default function(sel, data, c) {
 
 ## 数据响应式原理
 
+* 流程
+
+  ![数据响应式](E:\桌面\数据响应式.png)
+
 ### object.defineProperty()
 
 > vue2.x 实现数据响应式的核心 详解见笔记
@@ -382,32 +386,122 @@ Object.defineProperty(obj, "a", {
 
 
 
-#### defineReactive()
+### defineReactive()
 
-> defineProperty设置get和set拦截时 必须要另外定义一个变量 用于周转，所以 我们可以封装defineReactive提供闭包环境
+> 1. defineProperty设置get和set拦截时 必须要另外定义一个变量 用于周转，所以 我们可以封装defineReactive提供闭包环境
+> 2. 递归调用observe函数  因为对象中的属性可能是多层嵌套结构，每一层属性都需要是响应式的
+> 3. 属性设置新值newValue时也需要调用observe函数  设置新值可能出现嵌套的属性
 
 ````javascript
-function defineReactive(obj, key, val) {
+import observe from "./observe"
+export default function defineReactive(obj, key, val) {
   if(arguments.length == 2) {
     val = obj[key]
   } 
+
+
+  // 递归调用observe obj属性有多层嵌套时需要每一层都变成响应式
+  let childOb = observe(val)
+
+
   Object.defineProperty(obj, key, {
     // 可以被枚举
     enumerable: true,
     // 可以被配置  比如delete
     configurable: true,
     get() {
-      console.log("属性被读取了");
+      console.log(key + "属性被读取了");
       return val
     },
-    set(newVal) {
-      console.log("属性被修改了");
+    set(newVal) { 
+      console.log(key + "属性被修改了");
       if(newVal === val) {
         return 
       } 
       val = newVal
+      // 设置了新值  新值也要被observe   因为新值也可能是引用数据类型 有嵌套
+      childOb = observe(newVal)
     } 
   })
 }
 ````
 
+
+
+### Observer类
+
+> 用于将一个正常的obj对象转化为每一层级属性都可以被侦测到的obj
+
+````javascript
+export default class Observer {
+  constructor(value) {
+    // 给value对象自定义__ob__属性  属性值为实例对象本省
+    def(value, "__ob__", this, false)
+    // console.log("value", value);
+
+    this.walk(value)
+  }
+  // 遍历 将value对象zhong每一个属性都变为响应式的
+  walk(value) {
+    for(let i in value) {
+      // defineReactive用于将对象的某个属性变为响应式
+      defineReactive(value, i)
+    }
+  }
+}
+````
+
+
+
+#### walk函数
+
+> 遍历obj的每个属性  调用defineReactive函数将其变为响应式
+
+````javascript
+// 遍历 将value对象zhong每一个属性都变为响应式的
+  walk(value) {
+    for(let i in value) {
+      // defineReactive用于将对象的某个属性变为响应式
+      defineReactive(value, i)
+    }
+  }
+````
+
+
+
+### observe函数
+
+> 判断参数是够为一个对象  是对象就要实例化Observer实例  不是一个对象就直接返回
+
+````javascript
+function observe(value) {
+  // 如果不是value不是对象 就什么都不做
+  if(typeof value !== "object") {
+    return
+  }
+
+  // 定义ob
+  var ob
+  if(typeof value.__ob__ !== "undefined") {
+    ob = value.__ob__
+  } else {
+    ob = new Observer(value)
+  }
+  return ob;
+}
+
+````
+
+
+
+### 数组的响应式
+
+> 改写了数组的七个方法
+>
+> 1. push
+> 2. pop
+> 3. shift
+> 4. unshift
+> 5. splice
+> 6. sort
+> 7. reserve
