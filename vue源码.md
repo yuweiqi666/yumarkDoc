@@ -433,19 +433,31 @@ export default function defineReactive(obj, key, val) {
 > 用于将一个正常的obj对象转化为每一层级属性都可以被侦测到的obj
 
 ````javascript
-export default class Observer {
+class Observer {
   constructor(value) {
     // 给value对象自定义__ob__属性  属性值为实例对象本省
     def(value, "__ob__", this, false)
-    // console.log("value", value);
-
-    this.walk(value)
+    // 如果是数组  就蛮干 将数组的原型指向引入的arrayMethods
+    if(Array.isArray(value)) {
+      Object.setPrototypeOf(value, arrayMethods)
+      // 让这个数组变得observe
+      this.observeArray(value)
+    } else {
+      this.walk(value)
+    }
   }
   // 遍历 将value对象zhong每一个属性都变为响应式的
   walk(value) {
     for(let i in value) {
       // defineReactive用于将对象的某个属性变为响应式
       defineReactive(value, i)
+    }
+  }
+  // 数组的特殊遍历
+  observeArray(value) {
+    for(let i = 0; i < value.length; i++) {
+      // 调用observe 因为数组中也有可能是对象元素  需要被监测  如果是一般数据类型  不会被监测
+      observe(value[i])
     }
   }
 }
@@ -455,7 +467,7 @@ export default class Observer {
 
 #### walk函数
 
-> 遍历obj的每个属性  调用defineReactive函数将其变为响应式
+> 遍历obj对象的每个属性  调用defineReactive函数将其变为响应式
 
 ````javascript
 // 遍历 将value对象zhong每一个属性都变为响应式的
@@ -467,6 +479,20 @@ export default class Observer {
   }
 ````
 
+#### observeArray函数
+
+> 遍历array数组的每个元素  调用observe 变为响应式  因为数组的元素可能是对象
+
+````javascript
+// 数组的特殊遍历
+  observeArray(value) {
+    for(let i = 0; i < value.length; i++) {
+      // 调用observe 因为数组中也有可能是对象元素  需要被监测  如果是一般数据类型  不会被监测
+      observe(value[i])
+    }
+  }
+````
+
 
 
 ### observe函数
@@ -474,7 +500,7 @@ export default class Observer {
 > 判断参数是够为一个对象  是对象就要实例化Observer实例  不是一个对象就直接返回
 
 ````javascript
-function observe(value) {
+ function observe(value) {
   // 如果不是value不是对象 就什么都不做
   if(typeof value !== "object") {
     return
@@ -505,3 +531,84 @@ function observe(value) {
 > 5. splice
 > 6. sort
 > 7. reserve
+
+> 改写步骤
+>
+> 1. 先以Array.prototype为原型创建对象arrayPrototype
+> 2. 遍历七个方法   给arrayPrototype设置这个7个方法属性，同时备份原来的方法
+> 3. 在arrayPrototype对象的这7个方法中分别要调用原来的数组方法（注意this的指向）
+> 4. **unshift splice push**为数组新增元素  新增的数组元素也要是响应式的
+
+````javascript
+import { def } from "./utils"
+// 得到Array.prototype
+const arrayPrototype = Array.prototype
+
+// 以Array.prototype为原型创建对象
+export const arrayMethods = Object.create(arrayPrototype)
+
+const methodsNeedChange = [
+  "push",
+  "pop",
+  "shift",
+  "unshift",
+  "splice",
+  "sort",
+  "reserve"
+]
+
+methodsNeedChange.forEach(methodName => {
+  // 备份原来的方法
+  const original = arrayPrototype[methodName]
+  // 定义新的方法
+  def(arrayMethods, methodName, function() {
+    // 把数组身上的__ob__取出来   __ob__ 就是Observer实例对
+    const ob = this.__ob__
+    // push unshift splice三种方法能够插入新项 插入的新项也要变成响应式
+    let inserted = []
+
+    let args = arguments
+
+    switch (methodName) {
+      case "push":
+      case "unshift":
+        inserted = args
+        break;
+      case "splice":
+        inserted = args.slice[2]
+        break;
+    }
+
+    // 判断有没有插入的新项
+    if(inserted) {
+      ob.observeArray(inserted)
+    }
+
+    console.log("数组被改变了");
+    // 恢复数组原来的方法  注意this的指向
+    const result = original.apply(this, arguments)
+
+
+    return result
+
+  }, false)
+  
+})
+ 
+````
+
+
+
+### 依赖收集
+
+> **在getter中收集依赖  在setter中触发依赖**
+
+#### Dep类
+
+> 响应式对象的每一个对象（数组）属性的\_\_ob\_\_属性内都存在一个Dep的实例
+
+#### Watcher类
+
+
+
+ 
