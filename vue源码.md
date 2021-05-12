@@ -356,7 +356,7 @@ export default function(sel, data, c) {
 
 * 流程
 
-  ![数据响应式](E:\桌面\数据响应式.png)
+  ![数据响应式](.\imgs\数据响应式.png)
 
 ### object.defineProperty()
 
@@ -612,3 +612,91 @@ methodsNeedChange.forEach(methodName => {
 
 
  
+
+
+
+## AST抽象语法树
+
+> 1. 服务于模板编译 一种语法翻译成另一种语法
+> 2. vue模板语法  --> html语法  
+
+* **抽象语法树本质是一个对象**
+
+  
+
+#### 抽象语法树和虚拟节点
+
+> 1. 抽象语法树的最终产物是h函数
+> 2. h函数创建虚拟节点  从而进行diff算法 展示成真实的节点
+
+![AST抽象语法树](.\imgs\AST抽象语法树.png)
+
+#### 算法储备
+
+##### 指针思想
+
+> 指针就是一个下标位置
+
+* 寻找字符串aaabbbbcccccccdd中连续重复次数最多的字符
+
+  > 1. 设置两个指针 startPos为0    endPos为1
+  > 2. while循环判断两个指针指向值是否相同
+  > 3. 相同就将endPos++
+  > 4. 不同就记录startPos和endPos之间重复字符的长度 同时将startPos指向endPos的位置
+  > 5. 循环结束的条件是startPos指向的是undefined
+
+  ````javascript
+  var str = 'aaabbbbcccccccdd'
+  
+      var startPos = 0
+      
+      var endPos = 1
+  
+      var result = []
+  
+      while (str[startPos]) {
+        if(str[endPos] === str[startPos]) {
+          console.log(123);
+        } else {
+          let len = str.substring(startPos, endPos)
+  
+          console.log("len", len);
+  
+          result.push(len.length)
+  
+          startPos = endPos
+        }
+  
+        endPos++
+      }
+  
+  
+      console.log("result", Math.max(...result));
+  ````
+
+
+
+##### 递归深入
+
+* 斐波那契数列 （当前项等于前两项之和）输出前十项
+
+  > 1，1，3，5，8，13，21，34
+
+  ````javascript
+  function fib(n) {
+    // 第一项和第二项固定为1
+     if(n == 0 || n == 1) {
+       return 1
+     } 
+     n--
+     return fib(n) + fib(n - 1)
+   }
+  // 存在大量的计算
+  
+  for(let i = 0; i < 9; i++) {
+      console.log(fib(i))
+  }
+  ````
+
+  
+
