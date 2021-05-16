@@ -626,6 +626,58 @@ methodsNeedChange.forEach(methodName => {
 
 #### 抽象语法树和虚拟节点
 
+````html
+// html
+<div>
+    <h3>你好</h3>
+    <ul>
+        <li>A</li>
+        <li>B</li>
+        <li>C</li>
+    </ul>	
+<div>
+````
+
+````javascript
+// 对应的AST抽象语法树
+{
+    tag: "div",
+    children: [
+        {	
+            tag: "h3",
+            children: [
+                {text: "你好", type: 3}
+            ]
+        },
+        {
+            tag: "ul",
+            children: [
+                {	
+                    tag: "li",
+                    children: [
+                        {text: "A", type: 3}
+                    ]
+                },
+                {	
+                    tag: "li",
+                    children: [
+                        {text: "B", type: 3}
+                    ]
+                },
+                {	
+                    tag: "li",
+                    children: [
+                        {text: "C", type: 3}
+                    ]
+                }
+            ]
+        }
+    ]
+}
+````
+
+
+
 > 1. 抽象语法树的最终产物是h函数
 > 2. h函数创建虚拟节点  从而进行diff算法 展示成真实的节点
 
@@ -685,11 +737,7 @@ methodsNeedChange.forEach(methodName => {
   ````javascript
   function fib(n) {
     // 第一项和第二项固定为1
-     if(n == 0 || n == 1) {
-       return 1
-     } 
-     n--
-     return fib(n) + fib(n - 1)
+     return n === 0 || n === 1 ? 1: fib(n-1) + fib(n-2)
    }
   // 存在大量的计算
   
@@ -697,6 +745,126 @@ methodsNeedChange.forEach(methodName => {
       console.log(fib(i))
   }
   ````
+  
+  ````javascript
+  // 优化   加入缓存
+  // 定义缓存对象 
+var cache = {}
+  
+  function fib(n) {
+  // 判断缓存中有没有这个属性 有的话就不用递归了 直接用
+  if(cache.hasOwnProperty(n)) {
+     return cache[n] 
+  }
+  
+  let v = n == 0 || n == 1 ? 1 : fib(n - 1) + fib(n - 2);
+     // 将结果放进缓存
+     cache[n] = v;
+     return v 
+  }
+  
+  console.log(fib(4));
+  ````
+  
+  
+
+* 试将高维数组[1, 2, 3, [4, 5]] 形式转换
+
+  ````javascript
+  // [1, 2, 3, [4, 5]]
+  var arr = [1, 2, 3, [4, 5]]
+      
+  // 转换函数
+  function convert(arr) {
+    // 准备一个结果数组
+    var result = []
+    for(var i = 0; i < arr.length; i++) {
+      if(typeof arr[i] === "number") {
+        result.push({
+          value: arr[i]
+        })
+      } else if(Array.isArray(arr[i])) {
+        result.push({
+          children: convert(arr[i])
+        })
+      }
+    }
+  
+  
+    return result
+  }
+  
+  console.log(convert(arr));
+  ````
 
   
 
+##### 栈
+
+> 1. 栈（stack） 先进后出  
+> 2. 栈中插入元素叫**进栈/入栈/压栈**  栈中删除元素叫**出栈/退栈**
+> 3. 栈底封死 栈顶进行插入和删除操作
+> 4. **在js中栈可以用数组模拟，限制只能使用pop()和push()  **
+
+
+
+* 将3[abc]变为abcabcabc
+  将3[2[a]2[b]]变为aabbaabbaabb
+  将2[1[a]3[b]2[3[c]4[d]]]变为abbbcccddddcccddddabbbcccddddcccdddd
+
+  > 1. 遍历字符串
+  > 2. 遇到数字压入numStack栈
+  > 3. 遇到'['将空字符串压入strStack栈
+  > 4. 遇到字母拼接到strStack栈的最后一项
+  > 5. 遇到']'将strStack的最后一项重复numStrack的最后一项值，拼接到strStack最后第二项 ，numStrack和strStrack都弹栈
+
+  ````javascript
+  function smartRepeat(str) {
+    let numStack = []
+    let strStack = []
+    let result = ""
+    for(let i of str) {
+      console.log("i", typeof i);
+      if(!Number.isNaN(+i)) {
+        numStack.push(i)
+      }else if(i === "[") {
+        strStack.push("")
+      }else if(i === "]") {
+        if(strStack.length === 1) {
+          strStack[strStack.length - 1] += strStack[strStack.length - 1].repeat(numStack[numStack.length - 1])
+            } else {
+              strStack[strStack.length - 2] += strStack[strStack.length - 1].repeat(numStack[numStack.length - 1])
+              strStack.pop()
+            }
+            numStack.pop()
+          }else {
+            strStack[strStack.length - 1] += i
+          }
+        }
+  
+  
+        console.log("numStack", numStack);
+        console.log("strStack", strStack);
+  
+  
+        result = strStack.pop()
+        return result
+      }
+  
+      console.log(smartRepeat('2[1[a]3[b]2[3[c]4[d]]]'));
+  ````
+
+  
+
+
+
+#### 手写AST抽象语法树
+
+* 思路
+
+  > 1. 指针思想 index = 0   while循环模板字符串 index指向模板字符串的最后一个字符时停止循环
+  > 2. 每次循环都要重新赋值rest剩余部分（通过substring）
+  > 3. 然后正则匹配rest头部各种可能情况
+  >    1. 头部为开始标签如<div> 就将标签名字压入stack1栈中，同时将对象{tag: 标签名字, children: []}压入stack2栈中
+  >    2. 头部为标签中的文本时将文本push到stack2的最后一个对象元素的children数组属性中
+  >    3. 头部为结束标签如</div> stack1弹栈  stack2也弹栈 同时stack2弹栈的那一项push进入它前一项的children数组属性中去（要考虑stack2中是不是只有一项）
