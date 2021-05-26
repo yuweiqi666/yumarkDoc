@@ -394,7 +394,7 @@ res.cookie(name: string, val: string, options: {
 
 
 
-## 路由模块化
+## 路由模块化(子路由)
 
 > 将路由配置写到单独的文件中， 易于维护和管理
 

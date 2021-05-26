@@ -101,7 +101,7 @@ $.get("/test")  // $是函数对象
 
 * 流程状态
 
-  ![promise状态](E:\桌面\笔记\imgs\promise状态.jpg)
+  ![promise状态](.\imgs\promise状态.jpg)
 
 #### promise的基本使用
 

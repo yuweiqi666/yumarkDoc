@@ -1,4 +1,4 @@
-# MongoDB数据库
+MongoDB数据库
 
 ## 数据库概念
 
@@ -685,6 +685,7 @@ $lookup  用以引入其他集合的数据（表关联查询）
 * 创建账号
 
   ````
+  // 给某个数据库创建用必须要先切换到这个数据库
   db.createUser({
   	"user": 账号,
   	"pwd": 密码,
@@ -704,6 +705,24 @@ $lookup  用以引入其他集合的数据（表关联查询）
   数据库管理角色： dbAdmin userAdmin
   ......
   ````
+  
+* 删除用户
+
+  > 使用管理员账户登录先切换到admin数据库
+
+  ````shell
+  db.system.users.remove({user: "用户名"})
+  ````
+
+* 查看所有的用户
+
+  > 使用管理员账户登录先切换到admin数据库
+
+  ````shell
+  db.system.users.find()
+  ````
+
+  
 
 ### 开启验证模式
 
@@ -774,6 +793,9 @@ $lookup  用以引入其他集合的数据（表关联查询）
   ````
   # 第一种
   mongo 服务器ip地址:端口(27017)/数据库名 -u 用户名 -p 密码
+  
+  admin  admin123
+  
   
   #第二种
   先登录 -》 再选择数据库 -》 输入 db.auth(用户名,密码)
@@ -848,7 +870,7 @@ net stop mongodb    //关闭数据库
 
 * 创建集合的步骤
 
-  * 1. 对集合设定规则
+  * 1. 对集合设定规则(创建模型)
 
        ````javascript
        const courseSchema = new mongoose.Schema({
@@ -1043,6 +1065,7 @@ Course.find().skip(2).limit(5).then(res => {
 * 更新单个文档
 
   ````javascript
+  // User指的是集合名
   User.updateOne({name: "张三"}, {name: "李狗蛋"}).then(res => {
       console.log(res)
   })
