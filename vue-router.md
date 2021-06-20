@@ -56,7 +56,7 @@
 
 > 1. 路由传参（参数在路径中）
 > 2. 配置路由时使用动态路径如 “/home/:msg”(msg其实就是传的参数)
-> 3. 通过this.$route.params.msg接收动态路由参数
+> 3. 通过this.$route.params.msg接收动态路由参数(**传递参数时的参数名msg必须要与配置路由时写的参数名称msg一致**)
 
 ````javascript
 // 路由配置
@@ -107,6 +107,12 @@ router.push({ path: `/user/${userId}` })
 ### this.$router.go()
 
 > 参数为一个整数  表示在history中前进或者后退多少步
+
+
+
+### this.$router.back()
+
+
 
 
 
