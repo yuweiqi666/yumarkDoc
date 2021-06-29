@@ -28,7 +28,7 @@
 
 
 
-### nodejs模块的导出和导入
+### nodejs模块的导出和导入（commonjs）
 
 * module.exports导出模块
 
@@ -49,7 +49,18 @@
   console.log(a.age)		 ----> 20
   ````
 
-  
+
+
+
+### node初始化项目
+
+> 在目录中会生成package.json文件用来记录项目中用到的依赖
+
+````
+npm init             // 以node规范的形式初始化一个项目 或者创建一个node的包文件
+````
+
+
 
 ## node系统模块
 
