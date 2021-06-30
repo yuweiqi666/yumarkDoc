@@ -150,6 +150,8 @@
 
 > 在上面的打包中我们没有特意对webpack进行配置 直接执行npx webpack index.js打包(相当于让webpack以index.js为入口文件 其他（如出口文件main.js和出口文件位置dist）使用默认配置进行打包) 
 
+![webpack配置](E:\桌面\webpack配置.png)
+
 * 在项目根目录中新建webpack.config.js
 
   > 配置完成后运行 `npx webpack` 就可以完成打包 
@@ -160,10 +162,8 @@
   // 填写配置文件
   const path = require('path')
   
-  module.exports = {
-    // 指定模式 可以是development或者是production 区别是一个不压缩打包后的js代码 一个压缩打包后的js代码  不设置mode 则默认是production
+  module.exports = { 
     mode: 'development'
-    // 指定webpack打包的入口文件
     entry: './index.js',
     // 指定webpack打包完成后的文件存放位置
     output: {
@@ -174,6 +174,86 @@
     }
   }
   ````
+
+  * **mode**
+
+    > 指定模式 可以是development或者是production 区别是一个不压缩打包后的js代码 一个压缩打包后的js代码  不设置mode 则默认是production
+
+  * **entry**
+
+    > 指定webpack打包的入口文件
+
+    ````
+    entry: './index.js' 是  entry: { main: './index.js' } 的简写 所以main.js是打包完成的默认出口文件（看打包的输出内容）
+    ````
+
+    * 当我们需要打包多个文件时
+
+      ````javascript
+      entry: {
+      	main: './index.js',
+      	sub: './index.js'
+      }
+      // 第一次打包入口文件为index.js  打包的id值（键值）是main
+      // 第二次打包入口文件为index.js  打包出口文件的id值（键值）是sub（自定义的）
+      ````
+
+      
+
+  * **output**
+
+    > 指定webpack打包的出口文件和路径
+
+    * 打包多个文件时出口文件的配置
+
+      > **注意**：打包多个文件时出口文件名称不能写死，写死名称相当于打包多份js文件出口到一个文件中  这样写显然不合理
+
+      ````javascript
+      output: {
+      	filename: '[name].js',   // [name]相当于是配置entry的main和sub
+      	path: .....
+      }
+      ````
+
+  * **devtool**
+
+    > 专门用于配置sourceMap
+
+    * sourceMap
+
+      > 一种映射关系  比如js文件中有哪一行的代码写错了 如果不配置sourceMap
+      >
+      > 那么浏览器中只会显示这个错误在打包后的js文件中的位置 
+      >
+      > 配置了sourceMap后 ，他能知道打包后的js文件中的错误位置对应的打包之前js文件（源代码）中的错误位置
+
+      * cheap: 只提示行 不提示列
+      * module: 不仅提示业务代码 还提示第三方模块（loader）中的错误
+      * eval： 构建最快的一种
+
+    * 最佳实践
+
+      * 在development中
+
+        ````javascript
+        devtool: 'cheap-module-eval-source-map'
+        ````
+
+      * 在production中
+
+        ````javascript
+        devtool: 'cheap-module-source-map'
+        ````
+
+        
+
+  * **plugins**
+
+    > 配置的插件（用于在webpack打包的某一时刻做某些事情 目的：**提高效率**）
+
+  * **module**
+
+    > 配置的loader（用于打包非js文件）
 
 * 项目结构优化
 
@@ -209,7 +289,7 @@ Built at: 何时进行的打包
 Asset： 打包后的js文件  
 Size: 打包后的文件大小  
 Chunks：打包后js文件的id值（复杂项目可能会打包后有多个js文件 chuncks还会存放其他和其有关系的js文件的id值）
-Chunk Name： js文件的id值的名字
+Chunk Name： js文件的id值的名字/键值
 Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/index.js' 相当于是
 						entry: {
 							main: './src/index.js' 的简写
@@ -245,4 +325,20 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
 > 需要同时安装node-sass
 
 #### postcss-loader
+
+
+
+
+
+### plugin
+
+> 在webpack运行到某一时刻的时候帮我们做一些事情（类似于vue的生命周期）
+
+#### html-webpack-plugin
+
+> webpack打包完成后自动生成一个html文件 同时通过script将打包后的js文件引入
+
+#### clean-webpack-plugin
+
+> 打包前将旧的打包文件删除
 
