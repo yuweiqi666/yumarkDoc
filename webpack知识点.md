@@ -150,7 +150,7 @@
 
 > 在上面的打包中我们没有特意对webpack进行配置 直接执行npx webpack index.js打包(相当于让webpack以index.js为入口文件 其他（如出口文件main.js和出口文件位置dist）使用默认配置进行打包) 
 
-![webpack配置](E:\桌面\webpack配置.png)
+![webpack配置](.\imgs\webpack配置.png)
 
 * 在项目根目录中新建webpack.config.js
 
@@ -217,7 +217,9 @@
 
   * **devtool**
 
-    > 专门用于配置sourceMap
+    > 专门用于配置SourceMap
+
+    ![source-map](.\imgs\source-map.png)
 
     * sourceMap
 
@@ -225,9 +227,10 @@
       >
       > 那么浏览器中只会显示这个错误在打包后的js文件中的位置 
       >
-      > 配置了sourceMap后 ，他能知道打包后的js文件中的错误位置对应的打包之前js文件（源代码）中的错误位置
+      > 配置了SourceMap后 ，他能知道打包后的js文件中的错误位置对应的打包之前js文件（源代码）中的错误位置
 
-      * cheap: 只提示行 不提示列
+      * inline: 打包生成的[name].js.map文件以base64的形式存在于打包后的js文件
+      * cheap: 错误只提示行 不提示列（速度提升）
       * module: 不仅提示业务代码 还提示第三方模块（loader）中的错误
       * eval： 构建最快的一种
 
@@ -245,7 +248,100 @@
         devtool: 'cheap-module-source-map'
         ````
 
+  * **WebpackDevServer**
+
+    > **痛点**： 我们每次修改了源代码之后都要输命令进行手动打包才能更新看到效果
+    >
+    > **需求**： 所以我们希望在每次我们修改源代码的时候 webpack都可以帮我们自动进行打包
+
+    * 第一种方法：`在package.json中配置打包命令为webpack --watch`
+
+      > **原理：**监听源代码变化 每次变化都重新打包
+      >
+      > **缺点：**虽然实现了自动打包 但是每次都需要手动刷新才能看到效果
+
+      ![webpack--watch](.\imgs\webpack--watch.png)
+
+    * 第二种方法： `配置devServer`
+
+      > **优点：**1. 更改源代码自动打包并且自动刷新
+      >
+      >             2. 开启了一个服务器并且将打包后的静态文件放到了这个服务器（可以发送ajax）
+      >
+      > **注意：** 使用webpack-dev-server打包后的文件不会再存放在本地目录中，而是存放在内存中（为了提升打包的速度）
+
+      1. 下载`webpack-dev-server`
+
+         ````shell
+         npm install webpack-dev-server -D
+         ````
+
+      2. 在`webpack.config.js`中进行需要的配置
+
+         ![devServer配置](.\imgs\devServer配置.png)
+
+      3. 在`package.json`中添加脚本命令
+
+         ![devServer添加脚本命令](.\imgs\devServer添加脚本命令.png)
+
+      4. 在命令行执行命令
+
+         ````shell
+         npm run serve
+         ````
+
+         ![运行devServer](.\imgs\运行devServer.png)
+
+    * **HotModuleReplacement（热模块替换）**
+
+      > **痛点：**虽然使用了devServer可以进行自动打包和自动刷新页面 但是我们每次修改了代码， 整个页面都会初始化 ，我们希望的是只有我们代码修改的地方进行刷新
+
+      1. 在webpack.config.js中配置**HotModuleReplacement**插件
+
+         ![引入webpack](.\imgs\引入webpack.png)
+
+         ![引入webpack](.\imgs\配置webpack2.png)
+
+      2. 在devServer中配置
+
+         ![devServer中的配置](.\imgs\devServer中的配置.png)
+
+      3. 命令行`npm run serve`打包
+
+         
+
+      * 案例1：css中的热模块替换
+
+        > 点击新增按钮就会新增一个item div  在index.js中引入css文件 设置新增奇数个item div会设置背景颜色 使用热模块替换后修改css文件 页面只会刷新修改的部分
+
+        ````css
+        body div:nth-child(odd) {
+          background-color: blue; 
+          // devServer打包后修改背景色 页面只会局部刷新背景颜色更改的位置
+        }
+        ````
+
+        ````javascript
+        import './index.css'
         
+        var btn = document.createElement('button')
+        
+        btn.innerHTML = '新增'
+        
+        document.body.append(btn)
+        
+        btn.onclick = function() {
+          var div = document.createElement('div')
+          div.innerHTML = 'item'
+          document.body.append(div)
+        }
+        ````
+
+        
+
+      * 案例2：js中的热模块替换
+
+        > 
 
   * **plugins**
 
@@ -315,6 +411,26 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
 #### css-loader
 
 > 分析几个css文件之间的关系 最后合成到一个css文件
+
+* 常见配置
+
+  * importLoaders（作用于 `@import` 的资源之前）
+
+    ![css-loader配置](.\imgs\css-loader配置.png)
+
+    > 如果在index.js（入口js文件）中引入index.scss(scss文件) 在index.scss中又引入了common.scss文件  这种情况就需要配置importLoaders表示了在css-loader之前还有几个loader要执行，如果不配置的话 在打包index.scss时遇到在scss文件中使用@import引入了common.scss就直接使用css-loader进行处理了
+
+  * modules
+
+    ![css-loader配置](.\imgs\css-loader配置2.png)
+
+    > 配置modules实现css模块化  
+    >
+    > 如果不配置的话 那么在index.js中引入的样式文件 作用于全局
+
+    * 在js文件中对应的写法
+
+      ![css-loader modules js](.\imgs\css-loader modules js.png)
 
 #### style-loader
 
