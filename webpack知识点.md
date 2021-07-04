@@ -304,22 +304,28 @@
 
       2. 在devServer中配置
 
+         > **配置的`hotOnly：true`的意思是 发生编译报错 就不进行热更新**
+
          ![devServer中的配置](.\imgs\devServer中的配置.png)
 
-      3. 命令行`npm run serve`打包
+      3. 手写文件配置（但是处理css-loader已经帮我们配置好了， 所以我们不需要手写）
+
+      4. 命令行`npm run serve`打包
 
          
 
-      * 案例1：css中的热模块替换
+      * 案例1：css文件的热模块替换
 
         > 点击新增按钮就会新增一个item div  在index.js中引入css文件 设置新增奇数个item div会设置背景颜色 使用热模块替换后修改css文件 页面只会刷新修改的部分
+        >
+        > **注意：**理论上任何文件的热模块替换都需要手动配置， css-loader已经底层帮我们实现了css文件的变化监听， 所以不需要我们手写（区别与js文件）
 
-        ````css
+      ````css
         body div:nth-child(odd) {
           background-color: blue; 
           // devServer打包后修改背景色 页面只会局部刷新背景颜色更改的位置
         }
-        ````
+      ````
 
         ````javascript
         import './index.css'
@@ -330,18 +336,22 @@
         
         document.body.append(btn)
         
-        btn.onclick = function() {
+      btn.onclick = function() {
           var div = document.createElement('div')
-          div.innerHTML = 'item'
+        div.innerHTML = 'item'
           document.body.append(div)
-        }
+      }
         ````
 
         
 
-      * 案例2：js中的热模块替换
+      * 案例2：js文件的热模块替换
 
-        > 
+        > js文件 还需要额外配置  手动监听js文件的变化
+        >
+        > 下图配置含义： 如果开启了热更新， 需要手动监听number.js的变化，如果变化了就重新执行函数（同时进行了删除旧的函数结果的操作） 
+
+        ![js模块热更新](.\imgs\js模块热更新.png)
 
   * **plugins**
 
@@ -399,6 +409,8 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
 ### loader
 
 > webpack不能识别非js文件  所以如果要将非js文件进行打包 我们需要使用相应的loader
+>
+> **注意：**当我们使用有些loader时（看文档） 配置项options很多的时候, 我们可以将options这些配置项单独放到一个配置文件中（如`postcss-loader`对应配置文件为`postcss.config.js`， `babel-loader`对应配置文件为`babel.config.js`）
 
 #### file-loader
 
@@ -444,7 +456,96 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
 
 
 
+#### babel-loader
 
+> 将高版本的js转化为浏览器可以识别的低版本js
+
+* 安装
+
+  ````javascript
+  npm install --save-dev babel-loader @babel/core
+  ````
+
+* 在webpack.config.js中配置
+
+  ````javascript
+  {
+    module: {
+      rules: [
+        {
+          test: /\.m?js$/,
+          exclude: /node_modules/,
+          use: {
+            loader: "babel-loader",
+            options: {
+              presets: ['@babel/preset-env']
+            }
+          }
+        }
+      ]
+    }
+  }
+  ````
+
+* 使用**@babel/polyfill**插件
+
+  > **痛点**：babel默认只能将一些语法（syntax）进行转化  如果需要将api进行转化的话 需要借助插件
+  >
+  > **场景：**一般用于编写业务代码时 
+  >
+  > **缺点：**会污染全局
+
+  ````shell
+  npm install --save @babel/polyfill  必须安装运行依赖
+  ````
+
+  ````javascript
+  // 注意下载完@babel/polyfill 需要在webpack的入口文件中首先引入
+  import "@babel/polyfill";
+  ````
+
+  
+
+* @babel/preset-env中的一些常用的配置（前提是配置了**@babel/polyfill**）![babel配置](.\imgs\babel配置.png)
+
+  1. `useBuiltIns`
+
+     > 配置需要转化的内容  默认将所有的高级语法都转化， `useage`表示只转化代码中用到的 可以减少打包后代码的体积
+
+  2. `targets`
+
+     > 表示转化的代码需要兼容的浏览器版本 （只兼容配置的版本 减少代码打包后的体积）
+
+* babel一些其他的插件
+
+  * **@babel/plugin-transform-runtime**
+
+    > **场景：**一般用于编写类库或者是写插件 （与**@babel/polyfill**效果类似）
+    >
+    > 但是**不会污染全局**（因为底层采用了闭包实现）
+    >
+    > [参考博客](https://blog.csdn.net/m0_37613019/article/details/108226550)
+
+    ````shell
+    npm install --save-dev @babel/plugin-transform-runtime
+    ````
+
+    ````shell
+    npm install --save @babel/runtime
+    ````
+
+    ![plugin-transform-runtime](.\imgs\plugin-transform-runtime.png)
+
+    ````shell
+    npm install --save @babel/runtime-corejs2   
+    // corejs 默认为false 不会进行转化处理  设置为2需要额外使用`@babel/runtime-corejs2`
+    ````
+
+    ````shell
+    npm install --save @babel/runtime-corejs2
+    ````
+
+    
 
 ### plugin
 
@@ -458,3 +559,84 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
 
 > 打包前将旧的打包文件删除
 
+#### HotModuleReplacementPlugin
+
+> 用于热更新   需要配合devServer配置使用
+
+
+
+### Tree Shaking
+
+> `Tree Shaking`只支持ES Module的引入 
+
+> **摇树** （**一个模块就是一棵树, 模块中导出的内容就是树上的树叶。** 打包的时候将没引入的内容（树叶）全部摇晃掉）： 从其他模块中引入内容（**一个模块可能会导出很多的内容 但是我们引入的时候可能只引入部分内容**）的情况下， 进行打包时只打包引入的内容 未引入的内容不进行打包（摇晃掉） 
+
+* **在没有配置`Tree Shaking`的情况下**
+
+  * 在math.js文件中
+
+    > 导出了 add minus 两个函数
+
+    ![math](.\imgs\math.png)
+
+  * 在入口文件index.js中只导入add函数  然后调用add函数
+
+    ![导入add函数](.\imgs\导入add函数.png)
+
+  * 最终打包发现add 和 minus两个函数都被打包了 （**实际上minus并没有用到**）
+
+    ![打包后的文件](.\imgs\打包后的文件.png)
+
+* **在webpack中配置`Tree Shaking`**
+
+  > 1. 在`mode: development`默认没有配置`Tree Shaking`
+> 2. 在`mode: production`默认自动配置了`Tree Shaking` 只需要在`package.json`配置不需要`Tree Shaking`为模块
+  >
+> 3. 注意： 在`mode: development`下即使配置了`Tree Shaking` 导入模块中没有使用的模块也会进行打包,但是会给我们标记出来， 主要是为了开发模式方便调试, `mode: production`会正常生效
+  
+1. 在`webpack.config.js`中配置
+  
+     ![tree shaking配置](.\imgs\tree shaking配置.png)
+  
+     2. 在package.json中配置
+     
+        > 1. 配置sideEffects的含义： 在打包过程之设置不需要Tree Shaking的模块
+        >
+        > 2. 因为有一些模块是整个直接导入， 并没有具体导入什么内容
+        >
+        >    如：配置profill时需要导入**@babel/polyfill**直接`import '@babel/polyfill'`即可
+        >
+        >    导入css文件时  `import './index.css'` 即可
+        >
+        >    这时候就需要配置`sideEffects: ['@babel/polyfill', '*.css']`（不配置那么这些模块就不会被打包，但实际上这些模块都是我们需要的）
+     
+        ![tree shaking配置2](.\imgs\tree shaking配置2.png)
+
+
+
+
+
+### 不同环境的区分打包
+
+> webpack打包分为开发环境（`mode：development`）和生产环境(`mode: production`)
+
+* 需求: 在不同的环境需要下， 使用不同的webpack配置进行打包
+
+  > 1. 打开发环境的包和打生产环境的包有很多webpack配置是不一样的，如mode模式设置， 是否代码压缩，decServer, souce-map的配置等
+  > 2. 但是每一次打不同环境的包就修改一次webpack.config.js的做法过于麻烦
+
+  * 做法一：打不同环境的包使用不同的webpack配置文件
+
+    1. 创建`webpack.dev.js`作为打开发环境包的配置文件 创建`webpack.prod.js`作为打生产环境包的配置文件
+
+       ![不同的环境的配置](.\imgs\不同的环境的配置.png)
+
+    2. 配置`package.json`的script脚本命令
+
+       > 1. webpack的命令中 --config 可以指定使用哪个文件作为打包的配置文件
+       > 2. 配置完后相当于使用`npm run serve`就是使用`webpack.dev.js`这个配置文件打开发环境的包
+       > 3. 使用`npm run build`就是使用`webpack.prod.js`这个配置文件打生产环境的包
+
+       ![配置2](.\imgs\配置2.png)
+
+    
