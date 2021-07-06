@@ -640,7 +640,7 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
        > 3. 使用`npm run build`就是使用`webpack.prod.js`这个配置文件打生产环境的包
 
        ![配置2](.\imgs\配置2.png)
-    
+  
   * 做法二： 打不同环境的包使用不同的webpack配置文件 同时将两个webpack配置文件中相同的配置放到一个公用的文件`webpack.common.js`中
   
     > 需要使用到`webpack-merge`模块将`webpack.common.js`分别引入不同的配置文件
@@ -659,7 +659,7 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
 
 ### code spliting
 
-> **代码分割**
+> **代码分割**（针对导入的模块进行分开打包）
 >
 > 不进行代码分割的缺点（所有的代码都打包到一个文件中）：1.打包的文件很大，加载时间会长
 >
@@ -687,8 +687,36 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
 
      ![业务逻辑入口文件](.\imgs\业务逻辑入口文件.png)
 
-* 代码分割的第二种方法（借助webpack的配置）
+* 代码分割的第二种方法（借助SplitChunksPlugin的配置）
 
-  
+  * SplitChunksPlugin配置参数
 
+    > 如果不写任何配置参数， 只写个空对象， 则使用默认配置（参考官网）
   
+    ![splitChunks配置](E:\桌面\splitChunks配置.png)
+  
+    * chunks：用于配置代码分割的作用范围（同步/异步）
+  
+    * cacheGroups： （决定了代码最终分割到哪里）
+  
+      > 只要是对同步代码进行分割 就一定会走到cacheGroups这个配置
+  
+      * defaultVendors： 同步代码分割 匹配的组
+        * test： 匹配进行代码分割的文件
+        * priority： 匹配组的优先级(代码同时匹配到多个组时生效， 值越大优先级越高)
+        * filename：匹配的组打包后的文件名
+        * **reuseExistingChunk**： 是否重复打包， 如a文件中引入b文件  那么在打包a的时候就同时打包了b， 后面其他文件中引入b文件 需要打包b就直接复用之前打包的b文件 不会重复进行打包了
+      * default：默认分组 引入的模块都会匹配到（包括入口文件）
+  
+    * minSize： 进行代码分割的最小尺寸（小于这个尺寸打包就不会进行代码分割）
+  
+    * maxSize： 代码分割打包后的文件最大尺寸， 代码分割打包后的尺寸大于最大尺寸会进行二次分割
+  
+    * minChunks：模块被引入多少次才进行代码分割
+  
+    * maxAsyncRequests：同时加载的最大模块数  超过这个数就不做代码分割
+  
+    * maxInitialRequests：入口文件加载的最大模块书， 超过就不做代码分割
+
+
+
