@@ -108,7 +108,7 @@
 
 
 
-## webpack
+## webpack基础
 
 ### 概念
 
@@ -661,9 +661,13 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
 
 > **代码分割**（针对导入的模块进行分开打包）
 >
-> 不进行代码分割的缺点（所有的代码都打包到一个文件中）：1.打包的文件很大，加载时间会长
+> 不进行代码分割的缺点（所有的代码都打包到一个文件中）：
 >
-> 2.将第三方模块和业务代码打包在一起， 业务代码需要经常改变 ，每次改变都要打包一个很大的文件
+> 1. 打包的文件很大，加载时间会长
+>
+> 2. 将第三方模块和业务代码打包在一起， 业务代码需要经常改变 ，每次改变都要打包一个很大的文件
+>
+> 3. 模块引入分为动态引入import(xxxx) `  设置打包后的名称使用在代码中加注释的方法`   和静态引入import "xxxxx"  
 
 * 不进行代码分割的做法
 
@@ -712,11 +716,70 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
   
     * maxSize： 代码分割打包后的文件最大尺寸， 代码分割打包后的尺寸大于最大尺寸会进行二次分割
   
-    * minChunks：模块被引入多少次才进行代码分割
+    * minChunks：**在打包后的文件（chunk）中** 模块被引入多少次才进行代码分割
   
     * maxAsyncRequests：同时加载的最大模块数  超过这个数就不做代码分割
   
     * maxInitialRequests：入口文件加载的最大模块书， 超过就不做代码分割
 
 
+
+### Lazy Loading
+
+> 代码懒加载（针对引入模块（文件）， 使用动态引入import）：只有当满足特定条件才加载文件（模块）
+>
+
+````javascript
+function getComponent() {
+  return import(/*webpackChunkName: "lodash"*/'lodash').then(({ default: _ }) => {
+    
+    var element = document.createElement('div')
+    element.innerHTML = _.join(['a', 'b'], "***")
+
+    return element
+
+  })
+}
+// 点击才执行函数  函数中动态引入lodash第三方库  所以在页面那种只有点击了才加载lodash.js文件
+// 在html文件中一开始也是不引入打包后的lodash.js文件的
+document.addEventListener("click", () => {
+  getComponent().then(ele => {
+    document.body.append(ele)
+  })
+  
+})
+````
+
+> **相较于静态（同步）模块（后面改动业务代码时, 单独打包的第三方模块有缓存）， import动态引入模块(异步）才是提升性能的关键，所有在初始页面渲染没有必要加载的代码（如事件绑定）全部都改成动态引入能极大提升性能**（这就是为什么code spliting默认对异步加载进行代码分割）
+
+````javascript
+// 点击事件的处理函数就可以使用动态引入（代码懒加载）  因为只有点击的时候才执行里面的函数 
+// 在index.js 中
+document.addEventListener("click", () => {
+  import(/*webpackChunkName: "handleClick"*/'./click').then( ({ default: f }) => {
+    f()
+  }) 
+})
+````
+
+````javascript
+// 在click.js中   点击触发的执行函数
+function createEle() {
+  var element = document.createElement('div')
+  element.innerHTML = 'yuweiqi'
+  document.body.append(element)
+}
+
+
+export default createEle
+
+````
+
+
+
+
+
+### Chunk
+
+* 打包后的文件就是chunk
 
