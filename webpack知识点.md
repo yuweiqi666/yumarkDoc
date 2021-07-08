@@ -214,6 +214,10 @@
       	path: .....
       }
       ````
+      
+    * chunkFilename配置
+
+      > 引入模块单独打包的文件的命名
 
   * **devtool**
 
@@ -731,6 +735,7 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
 
 ````javascript
 function getComponent() {
+    			// webpackChunkName 用于自定义打包后的文件名称 详见官网import api
   return import(/*webpackChunkName: "lodash"*/'lodash').then(({ default: _ }) => {
     
     var element = document.createElement('div')
@@ -782,4 +787,52 @@ export default createEle
 ### Chunk
 
 * 打包后的文件就是chunk
+
+
+
+### prefetch/ preload
+
+> 区别
+>
+> 1. prefetch会在父chunk加载完后才开始加载， preload会在父chunk加载是，并行方式开始加载
+> 2. prefetch等浏览器闲置时加载， preload是立即加载
+> 3. prefetch用于未来某个时刻   preload用于当下时刻
+
+* prefetch(预取)
+
+  > 将来某些导航下可能需要的资源
+
+  * 加载首页， 点击登录按钮， 显示登录弹框 ， 这是登陆弹框就需要动态引入，同时设置prefetch
+
+    ````javascript
+    // webpackPrefetch: true 用于设置prefetch
+    import(/* webpackPrefetch: true */ 'LoginModal');
+    ````
+
+* preload(预加载)
+
+  > 当前导航下可能需要资源
+
+  * 在一个页面组件中引入了一个体积巨大的第三方库， 就可以使用preload, 加载页面的同时同步加载这个大体积的第三方库
+
+    ```javascript
+    // webpackPreload: true 用于设置 preload
+    import(/* webpackPreload: true */ 'ChartingLibrary');
+    ```
+
+    
+
+
+
+### css 代码分割
+
+> 当页面中引入css文件时， webpack默认会通过css-loader 、 style-loader将其转化为js文件，当我们打包时需要将css文件单独分离出来就需要使用css代码分割**(建议在生产环境打包时使用)**
+
+* MiniCssExtractPlugin
+
+  > 用于css代码分割的插件
+  >
+  > **注意点**：webpack中css文件都是直接导入到js文件中的，所以如果配置了TreeShaking需要单独设置css文件不使用TreeShaking（详情见TreeShaking知识点）
+
+  
 
