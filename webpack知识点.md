@@ -217,7 +217,7 @@
       
     * chunkFilename配置
 
-      > 引入模块单独打包的文件的命名
+      > 非入口chunk文件的名称， 如在入口文件中引入的第三方模块单独打包的文件的名称
 
   * **devtool**
 
@@ -643,7 +643,7 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
    > 2. 配置完后相当于使用`npm run serve`就是使用`webpack.dev.js`这个配置文件打开发环境的包
        > 3. 使用`npm run build`就是使用`webpack.prod.js`这个配置文件打生产环境的包
 
-       ![配置2](.\imgs\配置2.png)
+   ![配置2](.\imgs\配置2.png)
   
   * 做法二： 打不同环境的包使用不同的webpack配置文件 同时将两个webpack配置文件中相同的配置放到一个公用的文件`webpack.common.js`中
   
@@ -701,7 +701,7 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
 
     > 如果不写任何配置参数， 只写个空对象， 则使用默认配置（参考官网）
   
-    ![splitChunks配置](E:\桌面\splitChunks配置.png)
+    ![splitChunks配置](.\imgs\splitChunks配置.png)
   
     * chunks：用于配置代码分割的作用范围（同步/异步）
   
@@ -834,5 +834,49 @@ export default createEle
   >
   > **注意点**：webpack中css文件都是直接导入到js文件中的，所以如果配置了TreeShaking需要单独设置css文件不使用TreeShaking（详情见TreeShaking知识点）
 
+* 或者从代码分割的角度将css文件加入缓存组进行单独打包
+
+
+
+### webpack与浏览器缓存
+
+> 1. 需要先了解http缓存机制
+> 2. **如果配置的打包后的文件名称是固定的**，那么每次修改了业务代码重新打包后的文件使用的还是之前的文件名， 浏览器在重新请求文件时会发现请求文件名是相同的，那么就会使用本地的缓存， 页面就不会更新
+
+* 解决修改了业务代码但是浏览器有缓存的问题
+
+  > 将output中打包后的文件使用动态名称，`[contenthash]`代表打包文件的hash值， 只要文件变化重新打包， hash就会变化， 浏览器请求时发现请求的是与之前不同的文件，就不会使用本地缓存，而是使用最新的请求数据（使用代码分割单独打包的第三方模块因为我们不会去改变所以hash是不会变的，浏览器的非首次请求第三方模块都是使用的本地缓存，这是一种优化手段,详见`code splitig`代码分割）
+
+  ![解决浏览器缓存问题](.\imgs\解决浏览器缓存问题.png)
+
+
+
+
+
+
+
+## webpack原理
+
+### 手写loader
+
+> loader本质上就是一个函数
+
+* 手写loader的配置
+
+  > loader字段需要填写（自己loader文件）完整的路径
+
+  ![手写loader](.\imgs\手写loader.png)
+
+* 具体的loader代码
+
+  > 1. source: 代表匹配的文件中的内容
+  >
+  > 2. this.query可以获取配置的loader中的options参数
+  > 3. 更多的api参考官网
+
+  ![手写loader2](.\imgs\手写loader2.png)
+
   
+
+### 手写plugin
 
