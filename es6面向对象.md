@@ -230,7 +230,7 @@ son.say()   // hello world
   class Son extends Father {
     constructor(x, y) {
       super(x, y)   
-      // super关键字使用子类传的x，y作为参数调用父类的constructor方法 
+      // super关键字 在子类中使用子类传的x，y作为参数调用父类的constructor方法 相当于Father.prototype.constructor.call(this)
     }
   }
   

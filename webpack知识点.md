@@ -282,6 +282,8 @@
 
       2. 在`webpack.config.js`中进行需要的配置
 
+         > **修正：**contentBase表示的时devServer启动的服务器存放的静态html文件的目录  所以只需要写contentBase: path.join(__dirname, 'dist')       (表示将dist路径下的index.html作为devServer存放的静态文件)
+
          ![devServer配置](.\imgs\devServer配置.png)
 
       3. 在`package.json`中添加脚本命令
