@@ -1,4 +1,4 @@
-MongoDB数据库
+# MongoDB数据库
 
 ## 数据库概念
 
@@ -685,7 +685,7 @@ $lookup  用以引入其他集合的数据（表关联查询）
 * 创建账号
 
   ````
-  // 给某个数据库创建用必须要先切换到这个数据库
+  // 登录超级管理员的前提下 给某个数据库创建用必须要先切换到这个数据库
   db.createUser({
   	"user": 账号,
   	"pwd": 密码,
@@ -702,7 +702,7 @@ $lookup  用以引入其他集合的数据（表关联查询）
   #角色种类
   超级用户角色： root
   数据库用户角色： read  readWrite
-  数据库管理角色： dbAdmin userAdmin
+  数据库管理角色： dbAdmin userAdmin dbOwner
   ......
   ````
   
@@ -855,7 +855,7 @@ net stop mongodb    //关闭数据库
 2. node连接mongoodb
 
    ````javascript
-   mongoose.connect("mongodb://localhost/playground").then(res => {
+   mongoose.connect("mongodb://username:pwd@host:port/数据库名称", {相关配置项}).then(res => {
        console.log("数据库连接成功")
    })
    .catch(err => {

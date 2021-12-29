@@ -7,6 +7,7 @@
   2. 数据的增删改查
 * nodejs
   * nodejs是基于chrome V8 引擎的 javascript 代码运行环境
+  * 特点： 非阻塞IO（input + ouput）  事件驱动
 * 组成部分
   * nodejs组成部分： ECMAScript + node模块api
 
