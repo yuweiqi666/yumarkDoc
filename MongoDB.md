@@ -757,9 +757,9 @@ $lookup  用以引入其他集合的数据（表关联查询）
   })
   ````
 
-  > 注意： 前面版本的数据库是看不到admin数据库的  直接选中就可以了
+  > 注意： 前面版本的数据库是看不到adifmin数据库的  直接选中就可以了
   >
-  > 
+  > ![mongodb账号权限](.\imgs\mongodb账号权限.png)
 
   
 
@@ -801,7 +801,25 @@ $lookup  用以引入其他集合的数据（表关联查询）
   先登录 -》 再选择数据库 -》 输入 db.auth(用户名,密码)
   ````
 
- 
+ ### 指定数据库增加用户
+
+1. 使用超管用户登录
+2. 切换到指定的数据库
+3. 添加用户 **（正常的增删改查操作只需要给用户readWrite权限就可以了）**
+
+### 指定数据库删除用户
+
+1. 使用超管用户登录
+
+2. 切换到指定的数据库
+
+3. 删除指定用户数据库操作
+
+   ````shell
+   
+   ````
+
+
 
 ## MongoDB备份还原
 
@@ -855,7 +873,7 @@ net stop mongodb    //关闭数据库
 2. node连接mongoodb
 
    ````javascript
-   mongoose.connect("mongodb://username:pwd@host:port/数据库名称", {相关配置项}).then(res => {
+   mongoose.connect("mongodb://用户名:密码@host:port/数据库名称", {相关配置项}).then(res => {
        console.log("数据库连接成功")
    })
    .catch(err => {

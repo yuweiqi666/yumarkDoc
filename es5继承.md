@@ -18,7 +18,7 @@ function Son() {     // 子类构造函数
 
 Son.prototype = new Father() //Father的实例对象赋值给Son的原型
 
-Son.prototype.constructor = Son  //改变子类中constructor
+Son.prototype.constructor = Son  //改变子类中constructor指向
 
 const son = new Son()   // 子类创建实例对象son
  
