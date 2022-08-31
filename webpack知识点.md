@@ -225,6 +225,18 @@
 
     ![source-map](.\imgs\source-map.png)
 
+    * eval
+
+      ````javascript
+      eval('console.log(123)') ==》 输出123  // 默认显示的执行位置为 vm(虚拟机)
+      eval('console.log(123) //#sourceURL=./foo/bar.js') // 此时显示的执行位置为./foo/bar.js（实际还是执行在vm中 指定的只是一个标识）
+      ````
+
+      > 1. eval 是用于执行字符串中js代码的函数
+      > 2. 可以通过`//#sourceURL`指定一个js代码执行的文件路径
+
+      *  构建最快的一种  每个模块代码都使用evel() 执行**（同时指定每个模块的sourceURL 即源文件的位置）** 所以只能定位文件位置  不能定位具体文件中的 行或者列  
+
     * sourceMap
 
       > 一种映射关系  比如js文件中有哪一行的代码写错了 如果不配置sourceMap
@@ -234,11 +246,11 @@
       > 配置了SourceMap后 ，他能知道打包后的js文件中的错误位置对应的打包之前js文件（源代码）中的错误位置
 
       * inline: 打包生成的[name].js.map文件以base64的形式存在于打包后的js文件
-      * cheap: 错误只提示行 不提示列（速度提升）
-      * module: 不仅提示业务代码 还提示第三方模块（loader）中的错误
-      * eval： 构建最快的一种
+      * cheap: 错误只提示行 不提示列（速度提升） 且定位的是打包后的代码
+      * module: 不仅提示业务代码 还提示第三方模块（loader）中的错误  定位的是没有loader处理（如babel-loader/vue-loader等）的最原始源代码
+      * eval: 每个模块都使用eval() 执行 并且将source-map转化为dataUrl添加到eval()中 定位到源代码的行和列(会将生成的souce map文件以base64的形式存在于打包后的js文件)
 
-    * 最佳实践
+    * 最佳实践 
 
       * 在development中
 
@@ -246,7 +258,7 @@
         devtool: 'cheap-module-eval-source-map'
         ````
 
-      * 在production中
+      * 在production中 （或者直接none / nosources-source-map 防止暴露源代码）
 
         ````javascript
         devtool: 'cheap-module-source-map'
@@ -282,15 +294,29 @@
 
       2. 在`webpack.config.js`中进行需要的配置
 
-         > **修正：**contentBase表示的时devServer启动的服务器存放的静态html文件的目录  所以只需要写contentBase: path.join(__dirname, 'dist')       (表示将dist路径下的index.html作为devServer存放的静态文件)
+         > **修正：**contentBase表示的时devServer启动服务器的静态资源访问路径 （默认访问的是webpack打包的output路径dist），如果还需要设置其他的静态资源访问路径(一般都是没有参与打包的图片 ico 等 ) 就需要指定contentBase
 
-         ![devServer配置](.\imgs\devServer配置.png)
+         ![webpack contentbase](.\imgs\webpack contentbase.png)
 
-      3. 在`package.json`中添加脚本命令
+         ![public de](.\imgs\public de.png)
+
+         > 如 webpack指定了public为额外的静态资源路径 那么启动服务器后可以直接通过  http://localhost:8080/demo3.jpg  访问图片 ico同理	
+
+         * devServer配置proxy代理
+
+           >背景：前端请求第三方接口可能存在跨域问题（不是所有的接口都支持cors） 所以需要将请求代理到同源地址
+
+           ![devserver配置代理](.\imgs\devserver配置代理.png)
+
+      
+
+      
+
+      1. 在`package.json`中添加脚本命令
 
          ![devServer添加脚本命令](.\imgs\devServer添加脚本命令.png)
 
-      4. 在命令行执行命令
+      2. 在命令行执行命令
 
          ````shell
          npm run serve
@@ -300,7 +326,11 @@
 
     * **HotModuleReplacement（热模块替换）**
 
-      > **痛点：**虽然使用了devServer可以进行自动打包和自动刷新页面 但是我们每次修改了代码， 整个页面都会初始化 ，我们希望的是只有我们代码修改的地方进行刷新
+      > **痛点：**虽然使用了devServer可以进行自动打包和自动刷新页面 但是我们每次修改了代码， 整个页面都会初始化 ，我们希望的是只有我们代码修改的地方进行更新
+    >
+      > **不使用HMR：**每次修改代码 就会刷新整个页面 保存的状态都会丢失
+    >
+      > **使用HMR:**  每次修改代码  只会更新修改代码的指定模块位置 同时需要自定义修改指定代码的回调函数  
 
       1. 在webpack.config.js中配置**HotModuleReplacement**插件
 
@@ -328,36 +358,48 @@
 
       ````css
         body div:nth-child(odd) {
-          background-color: blue; 
+        background-color: blue; 
           // devServer打包后修改背景色 页面只会局部刷新背景颜色更改的位置
         }
       ````
 
-        ````javascript
-        import './index.css'
-        
-        var btn = document.createElement('button')
-        
-        btn.innerHTML = '新增'
-        
-        document.body.append(btn)
-        
-      btn.onclick = function() {
+    ```javascript
+    import './index.css'
+    
+    var btn = document.createElement('button')
+    
+    btn.innerHTML = '新增'
+    
+    document.body.append(btn)
+    
+    btn.onclick = function() {
           var div = document.createElement('div')
-        div.innerHTML = 'item'
+      div.innerHTML = 'item'
           document.body.append(div)
-      }
-        ````
+    }
+    ```
 
-        
+    ​    
 
       * 案例2：js文件的热模块替换
 
         > js文件 还需要额外配置  手动监听js文件的变化
         >
         > 下图配置含义： 如果开启了热更新， 需要手动监听number.js的变化，如果变化了就重新执行函数（同时进行了删除旧的函数结果的操作） 
-
+        
+          >**注意**: 因为不同的js文件处理的逻辑/格式不同  所以并没有一个通用的js热替换方案  需要我们自己定制   
+        
         ![js模块热更新](.\imgs\js模块热更新.png)
+
+      * 案例3：图片文件的热模块替换
+      
+        > 图片文件修改后 重新对image中的src属性进行赋值
+      
+        ![图片HMR](.\imgs\图片HMR.png)
+      
+        ![图片HMR2](.\imgs\图片HMR2.png)
+      
+        
 
   * **plugins**
 
@@ -420,11 +462,29 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
 
 #### file-loader
 
+> **拷贝源代码中的图片文件到output目录  注意 需要在webpack.config.js中使用publicPath指定图片文件路径**
+>
 > 专门用于打包图片文件（字体文件等）
+>
+> **优点：适合打包大体积图片**
+>
+> **缺点：增加请求次数**
 
 #### url-loader
 
-> 用于打包图片文件 直接将图片打包为base64引入js中 当然也可以配置通过判断图片大小来选择打包成图片文件还是打包成base64
+> **直接将源代码中的图片文件转化为data url的形式  图片使用base64格式  打包不需要再单独拷贝文件到output目录 而是直接解析转为base64的图片**
+>
+> **优点： 可以减少请求次数**
+>
+> **缺点：大体积图片使用 会加长打包时间**
+
+* 图片打包的最佳实践：
+
+  * 打包时判断图片的大小，对于大体积的图片使用**file-loader**拷贝图片 对于小体积的图片使用url-loader转化为base64
+
+    > ​	注意： 如果 设置小于10kb的图片才使用url-loader  大于10kb 会自动使用file-loader打包图片 所以需要同时下载file-loader
+
+    ![url-loader](.\imgs\url-loader.png)
 
 #### css-loader
 
@@ -596,29 +656,44 @@ Chunk Name中的main的含义： 我们在配置入口文件时 entry: './src/in
 * **在webpack中配置`Tree Shaking`**
 
   > 1. 在`mode: development`默认没有配置`Tree Shaking`
-> 2. 在`mode: production`默认自动配置了`Tree Shaking` 只需要在`package.json`配置不需要`Tree Shaking`为模块
+  > 2. 在`mode: production`默认自动配置了`Tree Shaking` 只需要在`package.json`配置`sideEffects`指定没有副作用的文件
+  
+  * 在`webpack.config.js`中配置
+  
+    * **usedExports：**打包结果中只导出外部用到的成员 （标记没有用到的导出成员）
+    * **minimize：**压缩代码  将导出的没有用到的成员代码移除 （将没有用到的导出成员移除）
+    * 注意： 单纯的配置**tree sharking**只能移除没有用到的导出成员代码 不能实现移除整个没有用到的模块 因为webpack会认为模块内的非导出成员代码会有副作用（移除整个没有用到的模块就需要配置**sideEffects**）
+  
+    ![tree sharking](.\imgs\tree sharking.png)
+
+* 在webpack中配置**sideEffects**
+
+  > 1. 配置sideEffects（副作用）的含义：**指定有副作用的文件  这样指定有副作用的文件 在打包过程中会被tree sharking忽略 ，而其他没有指定有副作用的文件（webpack即认定没有副作用）如果没有被用到就整个模块不会被打包**
   >
-> 3. 注意： 在`mode: development`下即使配置了`Tree Shaking` 导入模块中没有使用的模块也会进行打包,但是会给我们标记出来， 主要是为了开发模式方便调试, `mode: production`会正常生效
+  > 2. 因为有一些模块是整个直接导入， 并没有具体导入什么内容
+  >
+  >    如：配置profill时需要导入**@babel/polyfill**直接`import '@babel/polyfill'`即可
+  >
+  >    导入css文件时  `import './index.css'` 即可
+  >
+  >    这时候就需要配置`sideEffects: ['@babel/polyfill', '*.css']`（不配置那么这些模块就不会被打包，但实际上这些模块都是我们需要的， **也就是有副作用**）
 
-1. 在`webpack.config.js`中配置
-  
-     ![tree shaking配置](.\imgs\tree shaking配置.png)
-  
-     2. 在package.json中配置
-     
-        > 1. 配置sideEffects的含义： 在打包过程之设置不需要Tree Shaking的模块
-        >
-        > 2. 因为有一些模块是整个直接导入， 并没有具体导入什么内容
-        >
-        >    如：配置profill时需要导入**@babel/polyfill**直接`import '@babel/polyfill'`即可
-        >
-        >    导入css文件时  `import './index.css'` 即可
-        >
-        >    这时候就需要配置`sideEffects: ['@babel/polyfill', '*.css']`（不配置那么这些模块就不会被打包，但实际上这些模块都是我们需要的）
-     
-        ![tree shaking配置2](.\imgs\tree shaking配置2.png)
+  * 使用sideEffects
+
+    1. webpack配置文件指定开启sideEffects特性（**production 模式下可以忽略这一步因为已经默认配置了  直接看第2步**）
+
+       ![sideEffects](.\imgs\sideEffects.png)
+
+    2. package.json中指定有副作用的文件 （false 表示 所有的文件都没有副作用）
+    
+       ![tree shaking配置2](.\imgs\tree shaking配置2.png)
 
 
+
+
+
+* tree sharking 和 sideEffects的区别
+  * **Tree-shaking 只能移除没有用到的(导出)代码成员， sideEffects可以完整移除没有用到的模块（前提指定没有副作用） 。**
 
 
 
