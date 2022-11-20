@@ -210,6 +210,13 @@ son.say()   // hello world
 
 ### super关键字
 
+> 1. super方法：super作为函数调用时，代表的是父类的构造函数**constructor**
+> 2. super对象：super作为对象， 在普通方法（原型链上的方法）中指向父类的原型对象**prototype**， 在静态方法（static）中指向父类
+
+
+
+
+
 * 在子类的constructor方法中是用super关键字可以调用父类的constructor方法
 
   ````javascript
