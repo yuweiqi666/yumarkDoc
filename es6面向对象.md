@@ -79,6 +79,37 @@ class Person{
 
 
 
+### 类的初始化属性
+
+> 在类的顶部初始化属性
+>
+> **初始化属性会在构造函数运行之前执行**
+
+````javascript
+class Test {
+    a = 1
+	b = 2
+    c = 3
+}
+
+// 等同于
+class Test {
+   constructor() {
+       this.a = 1
+       this.b = 2
+       this.c = 3
+   } 
+}
+
+
+````
+
+
+
+
+
+
+
 ### 类的实例
 
 > 通过new创建一个类的实例
@@ -168,6 +199,12 @@ class Person {}
 
 Person.age = 18   
 // age属性没有定义在Person类中的constructor方法中 是静态属性
+
+// 补充 等价于
+class Person {
+    static age = 18
+}
+
 ````
 
 
