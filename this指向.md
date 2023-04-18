@@ -207,7 +207,7 @@ obj.b()  // 父级作用域中this指向为对象obj  因为是obj调用了foo�
 
 ````javascript
 function foo() {
-  var test = () => {
+  var test = function() {
     console.log(this)
   }
 

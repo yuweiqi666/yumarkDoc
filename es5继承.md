@@ -54,7 +54,7 @@ son.say()    // 子类调用父类继承的方法 输出hello
      son2.name.push(5) // 改变子类son2继承的name属性   其实是改变了son2的原型上的name属性的值 又因为原型上的属性为所有的实例对象共享的 所有在这里会同时改变了son1的name属性
      
      console.log(son1.name)   // [1,2,3,5]
-     console.log(son1.name)   // [1,2,3,5]
+     console.log(son2.name)   // [1,2,3,5]
    // 在son1修改的值被son2共享了
      ````
   
