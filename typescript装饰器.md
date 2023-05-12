@@ -14,13 +14,12 @@
 const ADecorator: ClassDecorator = function (target: Function) {
 	console.log('i am decorator');
 }
-  
-@ADecorator
-class A {}
+  @ADecorator
+  class A {}
   ```
-
-> ts运行时就会调用装饰器`ADecorator`
-
+  
+  > ts运行时就会调用装饰器`ADecorator`
+  
   <img src='.\imgs\decorator4.png'>
 
 
@@ -29,16 +28,16 @@ class A {}
 
 * 当我们需要对装饰器进行定制，可以定义一个工厂函数，传入一些参数，最终返回装饰器
 
-```typescript
-const ADecoratorFac: (data: string) => ClassDecorator = function (data: string) {
-  return function (target: Function) {
-     console.log('i am decorator', data);
+  ```typescript
+  const ADecoratorFac: (data: string) => ClassDecorator = function (data: string) {
+    return function (target: Function) {
+       console.log('i am decorator', data);
+    }
   }
-}
-
-@ADecoratorFac('test')
-class A {}
-```
+  
+  @ADecoratorFac('test')
+  class A {}
+  ```
 
 
 
@@ -72,10 +71,6 @@ class A {}
 
 
 
-
-
-
-
 # 环境搭建
 
 > **装饰器是一项实验性特性，必须在命令行或`tsconfig.json`里启用`experimentalDecorators`编译器选项**
@@ -103,8 +98,6 @@ class A {}
 * 类装饰器 方法参数`target`为这个装饰器类
 
 * 可以用于扩展被装饰类的方法或属性（一般扩展的是通用的方法或者属性）
-
-
 
  ```typescript
 const playDecorator: ClassDecorator = function (target: Function) {
@@ -164,23 +157,21 @@ loginController.login()
 
 * 方法装饰器的种类
 
-* 实例方法装饰器
+  * 实例方法装饰器
 
-  * 参数
+    * 参数
 
-    1. target：实例的原型对象
+      1. target：实例的原型对象
 
-    2. propertyKey：方法名称
+      2. propertyKey：方法名称
 
-    3. descriptor：方法描述（参考`Object.defineProperty`）
+      3. descriptor：方法描述（参考`Object.defineProperty`）
 
-       
-
-* 静态方法装饰器
-  * 参数
-    1. target: 装饰的类对应的构造函数
-    2. propertyKey: 方法名称
-    3. descriptor：方法描述
+  * 静态方法装饰器
+    * 参数
+      1. target: 装饰的类对应的构造函数
+      2. propertyKey: 方法名称
+      3. descriptor：方法描述
 
 
 
@@ -322,15 +313,15 @@ class Test {
 
 * 属性装饰器的种类
 
-* 静态属性装饰器
-  * 参数
-    1. target：装饰的类对应的构造函数
-    2. name：属性名
+  * 静态属性装饰器
+    * 参数
+      1. target：装饰的类对应的构造函数
+      2. name：属性名
 
-* 实例属性装饰器
-  * 参数
-    1. target：实例的原型对象
-    2. name：属性名
+  * 实例属性装饰器
+    * 参数
+      1. target：实例的原型对象
+      2. name：属性名
 
 
 
@@ -338,9 +329,7 @@ class Test {
 const propDecorator: PropertyDecorator = function (target: Object, propertyKey: string | symbol) {
   console.log('target', target);
   console.log('propertyKey', propertyKey);
-}
-
-  
+} 
 
 class Test {
   @propDecorator
@@ -352,9 +341,34 @@ class Test {
 
 ### 案例
 
+* 参数自动转换大小写
 
+  ```typescript
+  const LowerProDec: PropertyDecorator = function (target: object, propertyKey: string | symbol) {
+    let temp = ''
+    Object.defineProperty(target, propertyKey, {
+      get() {
+        return temp
+      },
+      set(val: string) {
+        temp = val.toLowerCase()
+      }
+    })
+  }
+  
+  class HD {
+    @LowerProDec
+    title: string | undefined
+  }
+  
+  const obj = new HD()
+  
+  obj.title = 'ZHANGSAN'
+  
+  console.log(obj.title)  // zhangsan
+  ```
 
-
+  
 
 
 
