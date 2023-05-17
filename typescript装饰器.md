@@ -1,50 +1,5 @@
 # typescript装饰器
 
-
-
-# 概念
-
-* 装饰器是一种特殊的类型声明
-
-* 附加到类/方法/属性/参数上
-
-* 装饰器本质就是一个函数 在ts解释执行时调用一次
-
-  ````typescript
-const ADecorator: ClassDecorator = function (target: Function) {
-	console.log('i am decorator');
-}
-  @ADecorator
-  class A {}
-  ````
-  
-  > ts运行时就会调用装饰器`ADecorator`
-  
-  <img src='.\imgs\decorator4.png'>
-
-
-
-## 装饰器工厂
-
-* 当我们需要对装饰器进行定制，可以定义一个工厂函数，传入一些参数，最终返回装饰器
-
-  ````typescript
-  const ADecoratorFac: (data: string) => ClassDecorator = function (data: string) {
-    return function (target: Function) {
-       console.log('i am decorator', data);
-    }
-  }
-  
-  @ADecoratorFac('test')
-  class A {}
-  ````
-
-  > `ADecoratorFac` 是一个工厂函数，返回一个装饰器。工厂函数传入参数data用于定制装饰器
-
-  <img src='.\imgs\decorator6.png'>
-
-
-
 # 概念
 
 * 装饰器是一种特殊的类型声明
