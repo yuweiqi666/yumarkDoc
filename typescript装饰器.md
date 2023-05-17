@@ -417,21 +417,84 @@ class Test {
 
 ### 案例
 
+* 验证方法参数
 
+  ````typescript
+  import 'reflect-metadata'
+  
+  const RequireDecorator: ParameterDecorator = function (target: Object, propertyKey: any, parameterIndex: number) {
+    // 需要验证的参数
+    let requiredParams: number[] = []
+    requiredParams.push(parameterIndex)
+  
+    Reflect.defineMetadata('required', requiredParams, target, propertyKey)
+  }
+  
+  const validareDecorator: MethodDecorator = function (target: Object, propertyKey: string | symbol, descriptor: PropertyDescriptor) {
+    console.log('validareDecorator', Reflect.getMetadata('required', target, propertyKey));
+    const method = descriptor.value
+    const requiredParams: number[] = Reflect.getMetadata('required', target, propertyKey) || []
+    descriptor.value = function () {
+      requiredParams.forEach(index => {
+        if(arguments[index] == undefined) {
+          throw new Error('请传递必要的参数')
+        }
+      }) 
+      return method.apply(this, arguments)
+    }
+  }
+  
+  class User {
+    @validareDecorator
+    find (name: string, @RequireDecorator id: number) {
+      console.log('id', id);
+    }
+  }
+  
+  new User().find('zhangsan', 1)
+  ````
 
-
+  
 
 ## 元数据
 
 ### 介绍
 
+* 为既有数据再设置额外的数据
 
+* 使用第三方包`reflect-metadata`
+
+  * 安装`reflect-metadata`
+
+    ```shell
+    npm install reflect-metadata
+    ```
+
+  * 设置元数据
+
+    ```typescript
+    Reflect.defineMetadata(额外数据属性名, 额外数据属性值, 被设置属性对象, 被设置属性值)
+    ```
+
+  * 使用元数据
+
+    ```typescript
+    Reflect.getMetadata(额外数据属性名, 被设置属性对象, 被设置属性值)
+    ```
 
 ### 案例
 
+````typescript
+import 'reflect-metadata'
 
+let user = {
+  username: 'zhangsan'
+}
 
+Reflect.defineMetadata('detailData', {title: '111', address: '222'}, user, 'username')
 
+console.log(Reflect.getMetadata('detailData', user, 'username'));
+````
 
 
 
