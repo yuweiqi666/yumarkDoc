@@ -10,13 +10,13 @@
 
 * 装饰器本质就是一个函数 在ts解释执行时调用一次
 
-  ```typescript
+  ````typescript
 const ADecorator: ClassDecorator = function (target: Function) {
 	console.log('i am decorator');
 }
   @ADecorator
   class A {}
-  ```
+  ````
   
   > ts运行时就会调用装饰器`ADecorator`
   
@@ -28,7 +28,7 @@ const ADecorator: ClassDecorator = function (target: Function) {
 
 * 当我们需要对装饰器进行定制，可以定义一个工厂函数，传入一些参数，最终返回装饰器
 
-  ```typescript
+  ````typescript
   const ADecoratorFac: (data: string) => ClassDecorator = function (data: string) {
     return function (target: Function) {
        console.log('i am decorator', data);
@@ -37,15 +37,11 @@ const ADecorator: ClassDecorator = function (target: Function) {
   
   @ADecoratorFac('test')
   class A {}
-  ```
+  ````
 
-
-
-> `ADecoratorFac` 是一个工厂函数，返回一个装饰器。工厂函数传入参数data用于定制装饰器
+  > `ADecoratorFac` 是一个工厂函数，返回一个装饰器。工厂函数传入参数data用于定制装饰器
 
   <img src='.\imgs\decorator6.png'>
-
-
 
 
 
